@@ -11,11 +11,26 @@ public class ConfiguracionNocheYInicio : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void InicializarCarga()
     {
-        // Aplicar configuracin de noche en cada escena que se cargue
+        CrearLimpiador();
+        
+        // Aplicar configuracin de noche
         AplicarNoche();
         
-        // Suscribirse al evento de carga de escena para reaplicar si es necesario
-        SceneManager.sceneLoaded += (scene, mode) => AplicarNoche();
+        // Suscribirse para re-aplicar en cada cambio de escena
+        SceneManager.sceneLoaded += (scene, mode) => {
+            CrearLimpiador();
+            AplicarNoche();
+        };
+    }
+
+    static void CrearLimpiador()
+    {
+        if (GameObject.FindObjectOfType<LimpiadorDeEscena>() == null)
+        {
+            GameObject go = new GameObject("Configuracion_Limpiador");
+            go.AddComponent<LimpiadorDeEscena>();
+            GameObject.DontDestroyOnLoad(go); // Asegurar que sobreviva a las transiciones
+        }
     }
 
     static void AplicarNoche()
@@ -39,13 +54,8 @@ public class ConfiguracionNocheYInicio : MonoBehaviour
         RenderSettings.ambientLight = new Color(0.05f, 0.05f, 0.1f);
 
         // 3. Intentar cargar el material de cielo nocturno (si existe en la ruta)
-        // Usamos el material que encontramos en la investigacin
         Material skyboxNoche = Resources.Load<Material>("FS013_Night"); 
-        // Nota: Resources.Load solo funciona si est en carpeta Resources. 
-        // Como no lo est, intentaremos buscarlo de otra forma o simplemente ajustar el color.
         
-        // Si no podemos cargar el material por ruta exacta sin ser Editor, 
-        // ajustamos el Tint del skybox actual si es posible
         if (RenderSettings.skybox != null)
         {
             RenderSettings.skybox.SetColor("_Tint", new Color(0.1f, 0.1f, 0.2f));

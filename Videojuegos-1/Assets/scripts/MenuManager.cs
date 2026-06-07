@@ -3,22 +3,21 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    // Método para el botón "Jugar"
+    // Mï¿½todo para el botï¿½n "Jugar"
     public void Jugar()
     {
         // Carga la escena principal del juego. 
-        // Si prefieres que "Jugar" mande primero al tutorial, cambia "Nivel 1" por "Tutorial".
-        SceneManager.LoadScene("Tutorial");
+        SceneManager.LoadScene("Nivel 1");
     }
 
-    // Método para el botón "Selector de nivel"
+    // Mï¿½todo para el botï¿½n "Selector de nivel"
     public void SelectorDeNivel()
     {
         // Carga exactamente el nombre de tu nueva escena
         SceneManager.LoadScene("SelectorNivel");
     }
 
-    // Método para el botón "Créditos"
+    // Mï¿½todo para el botï¿½n "Crï¿½ditos"
     public void AbrirCreditos()
     {
         // Carga exactamente la escena que tienes llamada "Creditos"

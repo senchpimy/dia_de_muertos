@@ -17,12 +17,15 @@ public class MenuManager : MonoBehaviour
         SceneManager.LoadScene("SelectorNivel");
     }
 
-    // M�todo para el bot�n "Cr�ditos"
+    // Mtodo para el botn "Crditos"
     public void AbrirCreditos()
     {
         // Carga exactamente la escena que tienes llamada "Creditos"
         SceneManager.LoadScene("Creditos");
     }
 
-    
-}
+    public void IrAEscenarioCalavera()
+    {
+        SceneManager.LoadScene("EscenarioCalavera");
+    }
+    }

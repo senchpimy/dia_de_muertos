@@ -13,7 +13,7 @@ public class CargarObjetos : MonoBehaviour
         // 1. Verificamos si detecta la tecla
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            Debug.Log("1. �Se presion� la tecla E en el teclado!");
+            Debug.Log("1. Se presion la tecla E en el teclado!");
 
             if (objetoCargado == null)
             {
@@ -37,7 +37,7 @@ public class CargarObjetos : MonoBehaviour
         // 2. Verificamos si el rayo golpea CUALQUIER cosa
         if (Physics.Raycast(origenRayo, transform.forward, out golpe, distanciaDeAgarre))
         {
-            Debug.Log("2. El rayo choc� con un objeto llamado: " + golpe.collider.name);
+            Debug.Log("2. El rayo chocó con un objeto llamado: " + golpe.collider.name);
 
             // 3. Verificamos si el objeto tiene la etiqueta correcta
             if (golpe.collider.CompareTag("Cargable"))
@@ -54,15 +54,26 @@ public class CargarObjetos : MonoBehaviour
 
                 objetoCargado.transform.position = puntoDeAgarre.position;
                 objetoCargado.transform.SetParent(puntoDeAgarre);
+
+                // Cambiar a capa 'Ignore Raycast' (2) para evitar que la camara choque con el objeto
+                objetoCargado.layer = 2;
+                foreach (Transform child in objetoCargado.GetComponentsInChildren<Transform>(true))
+                {
+                    child.gameObject.layer = 2;
+                }
+
+                // --- NUEVO: Convertir en Trigger para evitar colisin con la cmara ---
+                Collider col = objetoCargado.GetComponent<Collider>();
+                if (col != null) col.isTrigger = true;
             }
             else
             {
-                Debug.Log("3. ERROR: Choc� con algo, pero NO tiene la etiqueta 'Cargable'.");
+                Debug.Log("3. ERROR: Chocó con algo, pero NO tiene la etiqueta 'Cargable'.");
             }
         }
         else
         {
-            Debug.Log("2. ERROR: El rayo no choc� con nada. Ac�rcate m�s o ajusta la altura.");
+            Debug.Log("2. ERROR: El rayo no chocó con nada. Acércate más o ajusta la altura.");
         }
     }
 
@@ -75,6 +86,17 @@ public class CargarObjetos : MonoBehaviour
             rb.isKinematic = false;
             rb.useGravity = true;
         }
+
+        // Regresar a capa Default (0)
+        objetoCargado.layer = 0;
+        foreach (Transform child in objetoCargado.GetComponentsInChildren<Transform>(true))
+        {
+            child.gameObject.layer = 0;
+        }
+
+        // --- NUEVO: Desactivar Trigger ---
+        Collider col = objetoCargado.GetComponent<Collider>();
+        if (col != null) col.isTrigger = false;
 
         objetoCargado.transform.SetParent(null);
         objetoCargado = null;

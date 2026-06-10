@@ -11,12 +11,6 @@ public class VidaEnemigo : MonoBehaviour
     private Vector3 posicionInicial;
     private Quaternion rotacionInicial;
 
-    void Awake()
-    {
-        // Eliminamos al enemigo apenas aparece en el juego
-        Destroy(gameObject);
-    }
-
     void Start()
     {
         vidaActual = vidaMaxima;

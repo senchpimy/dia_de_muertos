@@ -1,26 +1,42 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class MenuManager : MonoBehaviour
 {
-    // M�todo para el bot�n "Jugar"
+    public static bool esVictoria = false;
+    public TMP_Text textoTitulo; 
+
+    void Start()
+    {
+        // Si no se asign en el inspector, intentamos buscar el ttulo por cdigo
+        if (textoTitulo == null)
+        {
+            // Buscamos un objeto que se llame 'Title' o similar, o simplemente el primer TMP_Text
+            GameObject objTitulo = GameObject.Find("Title") ?? GameObject.Find("Titulo") ?? GameObject.Find("YUKATAKIS");
+            if (objTitulo != null) textoTitulo = objTitulo.GetComponent<TMP_Text>();
+        }
+
+        if (esVictoria && textoTitulo != null)
+        {
+            textoTitulo.text = "¡VICTORIA!";
+            textoTitulo.color = Color.green;
+            esVictoria = false; 
+        }
+    }
+
     public void Jugar()
     {
-        // Carga la escena principal del juego. 
         SceneManager.LoadScene("Nivel 1");
     }
 
-    // M�todo para el bot�n "Selector de nivel"
     public void SelectorDeNivel()
     {
-        // Carga exactamente el nombre de tu nueva escena
         SceneManager.LoadScene("SelectorNivel");
     }
 
-    // Mtodo para el botn "Crditos"
     public void AbrirCreditos()
     {
-        // Carga exactamente la escena que tienes llamada "Creditos"
         SceneManager.LoadScene("Creditos");
     }
 
@@ -28,4 +44,4 @@ public class MenuManager : MonoBehaviour
     {
         SceneManager.LoadScene("EscenarioCalavera");
     }
-    }
+}

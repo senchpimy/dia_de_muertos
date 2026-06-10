@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using GLTFast;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.AI;
 
 public class LimpiadorDeEscena : MonoBehaviour
 {
@@ -48,7 +49,6 @@ public class LimpiadorDeEscena : MonoBehaviour
         foreach (GameObject obj in todos)
         {
             if (obj == null || obj.scene.name == null) continue;
-
             string nombre = obj.name.ToUpper();
             if (nombre.Contains("MISION") || nombre.Contains("ESCAPE") || nombre.Contains("CAJA") || nombre.Contains("TUTORIAL"))
             {
@@ -56,13 +56,10 @@ public class LimpiadorDeEscena : MonoBehaviour
                 else obj.SetActive(false);
                 continue;
             }
-
             Text legacyText = obj.GetComponent<Text>();
             if (legacyText != null && TextoContieneMision(legacyText.text)) { Destroy(obj); continue; }
-
             TMP_Text tmpText = obj.GetComponent<TMP_Text>();
             if (tmpText != null && TextoContieneMision(tmpText.text)) { Destroy(obj); continue; }
-
             TextMesh tm = obj.GetComponent<TextMesh>();
             if (tm != null && TextoContieneMision(tm.text)) { Destroy(obj); continue; }
         }
@@ -92,7 +89,7 @@ public class LimpiadorDeEscena : MonoBehaviour
 
         GameObject texto3D = new GameObject("Texto3D_Informativo");
         TextMesh tm = texto3D.AddComponent<TextMesh>();
-        tm.text = nombreEscena == "EscenarioCalavera" ? "¡EXPLORA LA GRAN CALAVERA!" : "¡BIENVENIDO AL ESPACIO VACÍO!\nRecoge los Panes de Muerto con 'E'.";
+        tm.text = nombreEscena == "EscenarioCalavera" ? "¡CUIDADO CON LOS ENEMIGOS!\nLleva el pan a la meta." : "¡BIENVENIDO!\nUsa el portal para ir a la calavera.";
         tm.fontSize = 60;
         tm.characterSize = 0.2f;
         tm.anchor = TextAnchor.MiddleCenter;
@@ -100,33 +97,28 @@ public class LimpiadorDeEscena : MonoBehaviour
         tm.color = Color.white;
         texto3D.transform.position = new Vector3(0, 10, 20);
 
-        // --- NUEVO: CREAR BOTÓN DE TELETRANSPORTE EN NIVEL 1 ---
         GameObject botonPortal = null;
         if (nombreEscena == "Nivel 1")
         {
             botonPortal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             botonPortal.name = "BOTON_PORTAL_CALAVERA";
-            botonPortal.transform.position = new Vector3(10, 0.1f, 0); // Al lado del jugador
+            botonPortal.transform.position = new Vector3(10, 0.1f, 0);
             botonPortal.transform.localScale = new Vector3(2, 0.1f, 2);
             botonPortal.GetComponent<Renderer>().material.color = Color.magenta;
-            
-            // Hacerlo Trigger para que el script lo detecte al pisarlo
             botonPortal.GetComponent<Collider>().isTrigger = true;
             botonPortal.AddComponent<BotonTeletransporte>();
 
-            // Agregar un texto flotante sobre el botón
             GameObject textoBoton = new GameObject("TextoBoton");
             textoBoton.transform.SetParent(botonPortal.transform);
-            textoBoton.transform.localPosition = new Vector3(0, 10, 0); // Relativo al botón
+            textoBoton.transform.localPosition = new Vector3(0, 10, 0);
             TextMesh tmBoton = textoBoton.AddComponent<TextMesh>();
             tmBoton.text = "PÍSAME PARA IR\nA LA CALAVERA";
             tmBoton.fontSize = 40;
             tmBoton.anchor = TextAnchor.MiddleCenter;
             tmBoton.alignment = TextAlignment.Center;
             tmBoton.color = Color.magenta;
-            textoBoton.transform.localScale = new Vector3(0.5f, 5, 0.5f); // Ajustar por escala del cilindro
+            textoBoton.transform.localScale = new Vector3(0.5f, 5, 0.5f);
         }
-        // -------------------------------------------------------
 
         yield return new WaitForFixedUpdate();
 
@@ -143,25 +135,25 @@ public class LimpiadorDeEscena : MonoBehaviour
         if (jugador != null)
         {
             protegidos.Add(jugador);
-            foreach (Transform t in jugador.GetComponentsInChildren<Transform>(true))
-                protegidos.Add(t.gameObject);
+            foreach (Transform t in jugador.GetComponentsInChildren<Transform>(true)) protegidos.Add(t.gameObject);
             
             GameObject cam = GameObject.Find("PlayerFollowCamera");
             if (cam != null) protegidos.Add(cam);
             
-            VidaJugador vida = jugador.GetComponent<VidaJugador>();
-            if (vida != null && vida.barraDeVidaUI != null)
-            {
-                GameObject rootUI = vida.barraDeVidaUI.transform.root.gameObject;
-                protegidos.Add(rootUI);
-                foreach (Transform t in rootUI.GetComponentsInChildren<Transform>(true)) protegidos.Add(t.gameObject);
-            }
-
+            var tpControl = jugador.GetComponent<StarterAssets.ThirdPersonController>();
             var controller = jugador.GetComponent<CharacterController>();
             if (controller != null) controller.enabled = false;
             
-            jugador.transform.position = nombreEscena == "EscenarioCalavera" ? new Vector3(0, 50, 0) : new Vector3(0, 1.5f, 0);
-            
+            if (nombreEscena == "EscenarioCalavera")
+            {
+                jugador.transform.position = new Vector3(0, 30, 40);
+                if (tpControl != null) { tpControl.MoveSpeed = 8.0f; tpControl.SprintSpeed = 15.0f; }
+            }
+            else
+            {
+                jugador.transform.position = new Vector3(0, 1.5f, 0);
+                if (tpControl != null) { tpControl.MoveSpeed = 2.0f; tpControl.SprintSpeed = 5.33f; }
+            }
             yield return null;
             if (controller != null) controller.enabled = true;
         }
@@ -172,6 +164,9 @@ public class LimpiadorDeEscena : MonoBehaviour
         foreach (GameObject obj in todosActivos)
         {
             if (obj == null || protegidos.Contains(obj)) continue;
+            // No borrar enemigos en la limpieza inicial
+            if (obj.GetComponent<VidaEnemigo>() != null) continue;
+            
             if (obj.GetComponent<Camera>() != null || obj.GetComponent<Light>() != null || 
                 obj.name.Contains("Input") || obj.name.Contains("EventSystem") ||
                 obj.name.Contains("MainCamera")) continue;
@@ -180,48 +175,129 @@ public class LimpiadorDeEscena : MonoBehaviour
 
         if (nombreEscena == "EscenarioCalavera")
         {
-            StartCoroutine(CargarMapaCalavera());
-        }
-        else
-        {
-            TextAsset glbData = Resources.Load<TextAsset>("pan_de_muerto");
-            if (glbData != null)
-            {
-                for (int i = 0; i < 12; i++)
-                {
-                    StartCoroutine(InstanciarPan(glbData.bytes, i));
-                }
-            }
+            StartCoroutine(CargarMapaCalavera(jugador));
         }
     }
 
-    IEnumerator CargarMapaCalavera()
+    IEnumerator CargarMapaCalavera(GameObject jugador)
     {
-        TextAsset glbData = Resources.Load<TextAsset>("skull_dia_de_muertos");
-        if (glbData == null) { Debug.LogError("No se encontró skull_dia_de_muertos.bytes"); yield break; }
+        TextAsset glbDataCalavera = Resources.Load<TextAsset>("skull_dia_de_muertos");
+        if (glbDataCalavera == null) yield break;
 
         var gltf = new GltfImport();
-        var success = gltf.LoadGltfBinary(glbData.bytes);
+        var success = gltf.LoadGltfBinary(glbDataCalavera.bytes);
         while (!success.IsCompleted) yield return null;
 
         if (success.Result)
         {
             GameObject mapa = new GameObject("MAPA_CALAVERA");
             mapa.transform.position = Vector3.zero;
-            mapa.transform.localScale = Vector3.one * 50f;
-
+            mapa.transform.localScale = Vector3.one * 30f;
             var inst = gltf.InstantiateMainSceneAsync(mapa.transform);
             while (!inst.IsCompleted) yield return null;
 
             foreach (var cam in mapa.GetComponentsInChildren<Camera>(true)) Destroy(cam.gameObject);
-
-            foreach (var mr in mapa.GetComponentsInChildren<MeshRenderer>(true))
-            {
-                mr.gameObject.AddComponent<MeshCollider>();
-            }
+            foreach (var mr in mapa.GetComponentsInChildren<MeshRenderer>(true)) mr.gameObject.AddComponent<MeshCollider>();
             
-            Debug.Log("Mapa Calavera cargado con éxito.");
+            GenerarPowerUps();
+            GenerarMetaVictoria();
+            
+            // Generar Panes
+            TextAsset glbDataPan = Resources.Load<TextAsset>("pan_de_muerto");
+            if (glbDataPan != null) {
+                for (int i = 0; i < 8; i++) StartCoroutine(InstanciarPan(glbDataPan.bytes, i));
+            }
+
+            // GENERAR ENEMIGOS LENTOS
+            GenerarEnemigos(jugador);
         }
+    }
+
+    void GenerarEnemigos(GameObject jugador)
+    {
+        // Buscamos el prefab original del esqueleto
+        GameObject prefabSkeleton = Resources.Load<GameObject>("Skeleton"); 
+        // Nota: Segn la estructura es Assets/Skeleton/Prefab/Skeleton.prefab
+        // Si no est en Resources, intentamos buscarlo en la escena antes de limpiar
+        
+        for (int i = 0; i < 5; i++)
+        {
+            GameObject enemigo;
+            if (prefabSkeleton != null) {
+                enemigo = Instantiate(prefabSkeleton);
+            } else {
+                // Fallback si no encontramos el prefab: un cilindro rojo
+                enemigo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                enemigo.GetComponent<Renderer>().material.color = Color.red;
+                enemigo.AddComponent<VidaEnemigo>();
+                enemigo.AddComponent<SeguirJugador>();
+                enemigo.AddComponent<NavMeshAgent>();
+            }
+
+            enemigo.name = "EnemigoLento_" + i;
+            enemigo.transform.position = new Vector3(Random.Range(-40, 40), -22, Random.Range(20, 80));
+            
+            // Configurar IA Lenta
+            NavMeshAgent agent = enemigo.GetComponent<NavMeshAgent>();
+            if (agent != null) {
+                agent.speed = 1.5f; // Muy lento (original suele ser 3.5)
+                agent.acceleration = 4f;
+            }
+
+            SeguirJugador seguir = enemigo.GetComponent<SeguirJugador>();
+            if (seguir != null && jugador != null) seguir.objetivo = jugador.transform;
+        }
+    }
+
+    void GenerarPowerUps()
+    {
+        for (int i = 0; i < 15; i++)
+        {
+            GameObject pu = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            pu.name = "PowerUp_Salto_" + i;
+            pu.transform.position = new Vector3(Random.Range(-50, 50), -22, Random.Range(-50, 50));
+            pu.transform.localScale = Vector3.one * 0.75f; 
+            pu.GetComponent<Renderer>().material.color = Color.cyan;
+            GameObject luzObj = new GameObject("Luz_PU");
+            luzObj.transform.SetParent(pu.transform);
+            luzObj.transform.localPosition = Vector3.zero;
+            Light luz = luzObj.AddComponent<Light>();
+            luz.type = LightType.Point;
+            luz.color = Color.cyan;
+            luz.intensity = 3f;
+            luz.range = 8f;
+            pu.GetComponent<Collider>().isTrigger = true;
+            pu.AddComponent<PowerUpSalto>();
+            pu.AddComponent<GirarItem>(); 
+        }
+    }
+
+    void GenerarMetaVictoria()
+    {
+        GameObject meta = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        meta.name = "PLATAFORMA_META";
+        meta.transform.position = new Vector3(0, -24, 10); 
+        meta.transform.localScale = new Vector3(5, 0.5f, 5);
+        meta.GetComponent<Renderer>().material.color = Color.yellow;
+        meta.GetComponent<Collider>().isTrigger = true;
+        meta.AddComponent<MetaFinal>();
+        GameObject luzMeta = new GameObject("Luz_Meta");
+        luzMeta.transform.SetParent(meta.transform);
+        luzMeta.transform.localPosition = new Vector3(0, 2, 0);
+        Light luz = luzMeta.AddComponent<Light>();
+        luz.type = LightType.Point;
+        luz.color = Color.yellow;
+        luz.intensity = 10f;
+        luz.range = 15f;
+        GameObject textoMeta = new GameObject("TextoMeta");
+        textoMeta.transform.SetParent(meta.transform);
+        textoMeta.transform.localPosition = new Vector3(0, 2, 0);
+        TextMesh tm = textoMeta.AddComponent<TextMesh>();
+        tm.text = "ENTREGA EL PAN AQUÍ";
+        tm.fontSize = 24;
+        tm.characterSize = 0.1f;
+        tm.anchor = TextAnchor.MiddleCenter;
+        tm.color = Color.yellow;
     }
 
     IEnumerator InstanciarPan(byte[] bytes, int index)
@@ -229,29 +305,22 @@ public class LimpiadorDeEscena : MonoBehaviour
         var gltf = new GltfImport();
         var success = gltf.LoadGltfBinary(bytes);
         while (!success.IsCompleted) yield return null;
-
         if (success.Result)
         {
             GameObject container = new GameObject("Pan_" + index);
-            container.transform.position = new Vector3(Random.Range(-25, 25), 2, Random.Range(10, 40));
+            container.transform.position = new Vector3(Random.Range(-30, 30), -22, Random.Range(20, 60));
             container.transform.localScale = Vector3.one * 3f;
             container.tag = "Cargable";
-
             var inst = gltf.InstantiateMainSceneAsync(container.transform);
             while (!inst.IsCompleted) yield return null;
-
             Component[] componentes = container.GetComponentsInChildren<Component>(true);
             foreach (var comp in componentes)
             {
-                if (comp == null || comp is Transform || comp is MeshRenderer || comp is MeshFilter || comp is SkinnedMeshRenderer) 
-                    continue;
-                if (comp is Camera || comp is AudioListener || comp.GetType().Name.Contains("Cinemachine"))
-                    Destroy(comp);
+                if (comp == null || comp is Transform || comp is MeshRenderer || comp is MeshFilter || comp is SkinnedMeshRenderer) continue;
+                if (comp is Camera || comp is AudioListener || comp.GetType().Name.Contains("Cinemachine")) Destroy(comp);
             }
-
             Rigidbody rb = container.AddComponent<Rigidbody>();
             rb.mass = 2f;
-            
             MeshRenderer mr = container.GetComponentInChildren<MeshRenderer>();
             if (mr != null)
             {
@@ -259,11 +328,7 @@ public class LimpiadorDeEscena : MonoBehaviour
                 bc.center = container.transform.InverseTransformPoint(mr.bounds.center);
                 bc.size = mr.bounds.size;
                 bc.isTrigger = false;
-            }
-            else
-            {
-                container.AddComponent<SphereCollider>();
-            }
+            } else container.AddComponent<SphereCollider>();
         }
     }
 }

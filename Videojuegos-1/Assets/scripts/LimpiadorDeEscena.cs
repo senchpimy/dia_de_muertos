@@ -102,7 +102,8 @@ public class LimpiadorDeEscena : MonoBehaviour
         {
             botonPortal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             botonPortal.name = "BOTON_PORTAL_CALAVERA";
-            botonPortal.transform.position = new Vector3(10, 0.1f, 0);
+            // Posicionado en línea recta frente al spawn del jugador (Z=20)
+            botonPortal.transform.position = new Vector3(0, 0.1f, 20); 
             botonPortal.transform.localScale = new Vector3(2, 0.1f, 2);
             botonPortal.GetComponent<Renderer>().material.color = Color.magenta;
             botonPortal.GetComponent<Collider>().isTrigger = true;
@@ -202,10 +203,10 @@ public class LimpiadorDeEscena : MonoBehaviour
             GenerarPowerUps();
             GenerarMetaVictoria();
             
-            // Generar Panes
+            // Generar Panes (Reducido a 4)
             TextAsset glbDataPan = Resources.Load<TextAsset>("pan_de_muerto");
             if (glbDataPan != null) {
-                for (int i = 0; i < 8; i++) StartCoroutine(InstanciarPan(glbDataPan.bytes, i));
+                for (int i = 0; i < 4; i++) StartCoroutine(InstanciarPan(glbDataPan.bytes, i));
             }
 
             // GENERAR ENEMIGOS LENTOS
@@ -215,37 +216,46 @@ public class LimpiadorDeEscena : MonoBehaviour
 
     void GenerarEnemigos(GameObject jugador)
     {
-        // Buscamos el prefab original del esqueleto
+        // El prefab ahora está en Resources/Skeleton.prefab
         GameObject prefabSkeleton = Resources.Load<GameObject>("Skeleton"); 
-        // Nota: Segn la estructura es Assets/Skeleton/Prefab/Skeleton.prefab
-        // Si no est en Resources, intentamos buscarlo en la escena antes de limpiar
         
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++)
         {
             GameObject enemigo;
             if (prefabSkeleton != null) {
                 enemigo = Instantiate(prefabSkeleton);
+                Debug.Log("Esqueleto real instanciado.");
             } else {
-                // Fallback si no encontramos el prefab: un cilindro rojo
+                Debug.LogWarning("No se encontró el prefab Skeleton en Resources. Usando cilindro.");
                 enemigo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 enemigo.GetComponent<Renderer>().material.color = Color.red;
                 enemigo.AddComponent<VidaEnemigo>();
                 enemigo.AddComponent<SeguirJugador>();
-                enemigo.AddComponent<NavMeshAgent>();
+                // Añadimos un Animator vacío para evitar errores si es un cilindro
+                enemigo.AddComponent<Animator>(); 
             }
 
             enemigo.name = "EnemigoLento_" + i;
-            enemigo.transform.position = new Vector3(Random.Range(-40, 40), -22, Random.Range(20, 80));
+            // Ajustado a la altura de los powerups (Y = -24) subido 1 unidad mas
+            enemigo.transform.position = new Vector3(Random.Range(-40, 40), -24, Random.Range(40, 80));
+            enemigo.transform.localScale = Vector3.one * 1.5f; // Un poco más grandes
             
-            // Configurar IA Lenta
+            // Asegurar componentes de IA
             NavMeshAgent agent = enemigo.GetComponent<NavMeshAgent>();
+            if (agent == null) agent = enemigo.AddComponent<NavMeshAgent>();
+            
             if (agent != null) {
-                agent.speed = 1.5f; // Muy lento (original suele ser 3.5)
+                agent.speed = 1.5f;
                 agent.acceleration = 4f;
+                agent.stoppingDistance = 2f;
             }
 
             SeguirJugador seguir = enemigo.GetComponent<SeguirJugador>();
-            if (seguir != null && jugador != null) seguir.objetivo = jugador.transform;
+            if (seguir == null) seguir = enemigo.AddComponent<SeguirJugador>();
+            if (seguir != null && jugador != null) {
+                seguir.objetivo = jugador.transform;
+                seguir.velocidadManual = 1.5f;
+            }
         }
     }
 

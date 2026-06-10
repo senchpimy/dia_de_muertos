@@ -13,7 +13,7 @@ public class CargarObjetos : MonoBehaviour
         // 1. Verificamos si detecta la tecla
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            Debug.Log("1. ¡Se presionó la tecla E en el teclado!");
+            Debug.Log("1. ï¿½Se presionï¿½ la tecla E en el teclado!");
 
             if (objetoCargado == null)
             {
@@ -37,12 +37,12 @@ public class CargarObjetos : MonoBehaviour
         // 2. Verificamos si el rayo golpea CUALQUIER cosa
         if (Physics.Raycast(origenRayo, transform.forward, out golpe, distanciaDeAgarre))
         {
-            Debug.Log("2. El rayo chocó con un objeto llamado: " + golpe.collider.name);
+            Debug.Log("2. El rayo chocï¿½ con un objeto llamado: " + golpe.collider.name);
 
             // 3. Verificamos si el objeto tiene la etiqueta correcta
             if (golpe.collider.CompareTag("Cargable"))
             {
-                Debug.Log("3. ¡Etiqueta Cargable detectada! Levantando cubo...");
+                Debug.Log("3. Â¡Etiqueta Cargable detectada! Levantando el Pan de Muerto...");
                 objetoCargado = golpe.collider.gameObject;
 
                 Rigidbody rb = objetoCargado.GetComponent<Rigidbody>();
@@ -57,12 +57,12 @@ public class CargarObjetos : MonoBehaviour
             }
             else
             {
-                Debug.Log("3. ERROR: Chocó con algo, pero NO tiene la etiqueta 'Cargable'.");
+                Debug.Log("3. ERROR: Chocï¿½ con algo, pero NO tiene la etiqueta 'Cargable'.");
             }
         }
         else
         {
-            Debug.Log("2. ERROR: El rayo no chocó con nada. Acércate más o ajusta la altura.");
+            Debug.Log("2. ERROR: El rayo no chocï¿½ con nada. Acï¿½rcate mï¿½s o ajusta la altura.");
         }
     }
 

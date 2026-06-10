@@ -25,7 +25,8 @@ public class ConfiguracionNocheYInicio : MonoBehaviour
 
     static void CrearLimpiador()
     {
-        if (GameObject.FindObjectOfType<LimpiadorDeEscena>() == null)
+        // Actualizado para usar FindAnyObjectByType (evita el warning de obsoleto)
+        if (GameObject.FindAnyObjectByType<LimpiadorDeEscena>() == null)
         {
             GameObject go = new GameObject("Configuracion_Limpiador");
             go.AddComponent<LimpiadorDeEscena>();
@@ -35,8 +36,8 @@ public class ConfiguracionNocheYInicio : MonoBehaviour
 
     static void AplicarNoche()
     {
-        // 1. Buscar la Luz Direccional (el "Sol")
-        Light[] luces = GameObject.FindObjectsOfType<Light>();
+        // Actualizado para usar FindObjectsByType (evita el warning de obsoleto)
+        Light[] luces = GameObject.FindObjectsByType<Light>(FindObjectsSortMode.None);
         foreach (Light luz in luces)
         {
             if (luz.type == LightType.Directional)
@@ -53,7 +54,7 @@ public class ConfiguracionNocheYInicio : MonoBehaviour
         RenderSettings.ambientIntensity = 0.2f;
         RenderSettings.ambientLight = new Color(0.05f, 0.05f, 0.1f);
 
-        // 3. Intentar cargar el material de cielo nocturno (si existe en la ruta)
+        // 3. Intentar cargar el material de cielo nocturno
         Material skyboxNoche = Resources.Load<Material>("FS013_Night"); 
         
         if (RenderSettings.skybox != null)
@@ -69,7 +70,6 @@ public class AutoConfiguradorInicio
 {
     static AutoConfiguradorInicio()
     {
-        // Esto asegura que al dar Play en el editor, SIEMPRE empiece desde el Men Principal
         string rutaEscenaInicio = "Assets/Scenes/MenuMain.unity";
         SceneAsset escena = AssetDatabase.LoadAssetAtPath<SceneAsset>(rutaEscenaInicio);
         

@@ -3,7 +3,8 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using GLTFast;
-using TMPro; // Por si el texto usa TextMeshPro
+using TMPro;
+using UnityEngine.UI;
 
 public class LimpiadorDeEscena : MonoBehaviour
 {
@@ -23,6 +24,8 @@ public class LimpiadorDeEscena : MonoBehaviour
         {
             StopAllCoroutines();
             StartCoroutine(ForzarPlataformaYLimpieza());
+            // Lanzamos una rutina extra que limpia cada segundo por si algo reaparece
+            StartCoroutine(LimpiadorPersistente());
         }
     }
 
@@ -31,19 +34,66 @@ public class LimpiadorDeEscena : MonoBehaviour
         return !nombre.Contains("Menu") && !nombre.Contains("Creditos") && !nombre.Contains("Selector");
     }
 
+    IEnumerator LimpiadorPersistente()
+    {
+        // Durante los primeros 5 segundos del nivel, limpiamos cada segundo
+        // por si algn script del juego original intenta reactivar la interfaz vieja.
+        for (int i = 0; i < 5; i++)
+        {
+            EjecutarLimpiezaDeTextos();
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    void EjecutarLimpiezaDeTextos()
+    {
+        // Buscamos TODOS los objetos, incluso los desactivados
+        GameObject[] todos = Resources.FindObjectsOfTypeAll<GameObject>();
+        foreach (GameObject obj in todos)
+        {
+            if (obj == null || obj.scene.name == null) continue; // Ignorar prefabs en la carpeta Assets
+
+            string nombre = obj.name.ToUpper();
+            if (nombre.Contains("MISION") || nombre.Contains("ESCAPE") || nombre.Contains("CAJA") || nombre.Contains("TUTORIAL"))
+            {
+                // Si el objeto se llama as, lo borramos o desactivamos
+                if (obj.activeInHierarchy) Destroy(obj);
+                else obj.SetActive(false); // Si ya est desactivado, nos aseguramos
+                continue;
+            }
+
+            // Tambin revisamos el contenido de los textos
+            Text legacyText = obj.GetComponent<Text>();
+            if (legacyText != null && TextoContieneMision(legacyText.text)) { Destroy(obj); continue; }
+
+            TMP_Text tmpText = obj.GetComponent<TMP_Text>();
+            if (tmpText != null && TextoContieneMision(tmpText.text)) { Destroy(obj); continue; }
+
+            TextMesh tm = obj.GetComponent<TextMesh>();
+            if (tm != null && TextoContieneMision(tm.text)) { Destroy(obj); continue; }
+        }
+    }
+
+    bool TextoContieneMision(string t)
+    {
+        if (string.IsNullOrEmpty(t)) return false;
+        string upper = t.ToUpper();
+        return upper.Contains("MISI") || upper.Contains("ESCAPE") || upper.Contains("CAJA");
+    }
+
     IEnumerator ForzarPlataformaYLimpieza()
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.05f);
 
-        // 1. Crear plataforma estable (CAPA DEFAULT para que el personaje detecte suelo)
+        // 1. Crear plataforma estable
         GameObject plataforma = GameObject.CreatePrimitive(PrimitiveType.Cube);
         plataforma.name = "SUELO_SEGURO_ESTABLE";
         plataforma.transform.position = new Vector3(0, -0.5f, 0);
         plataforma.transform.localScale = new Vector3(200, 1, 200);
         plataforma.GetComponent<Renderer>().material.color = new Color(0.15f, 0.15f, 0.15f);
-        plataforma.layer = 0; // Layer Default
+        plataforma.layer = 0; 
 
-        // 2. Nuevo Texto 3D
+        // 2. Nuevo Texto 3D de Bienvenida
         GameObject texto3D = new GameObject("Texto3D_Informativo");
         TextMesh tm = texto3D.AddComponent<TextMesh>();
         tm.text = "¡BIENVENIDO AL ESPACIO VACÍO!\nRecoge los Panes de Muerto con 'E'.";
@@ -56,11 +106,11 @@ public class LimpiadorDeEscena : MonoBehaviour
 
         yield return new WaitForFixedUpdate();
 
-        // 3. Localizar al jugador
+        // 3. Localizar al jugador y protegerlo
         GameObject jugador = GameObject.FindWithTag("Player");
         if (jugador == null) jugador = GameObject.FindAnyObjectByType<CharacterController>()?.gameObject;
         
-        List<GameObject> protegidos = new List<GameObject> { plataforma, texto3D, gameObject };
+        HashSet<GameObject> protegidos = new HashSet<GameObject> { plataforma, texto3D, gameObject };
         
         if (jugador != null)
         {
@@ -70,6 +120,15 @@ public class LimpiadorDeEscena : MonoBehaviour
             
             GameObject cam = GameObject.Find("PlayerFollowCamera");
             if (cam != null) protegidos.Add(cam);
+            
+            // Proteger UI de vida
+            VidaJugador vida = jugador.GetComponent<VidaJugador>();
+            if (vida != null && vida.barraDeVidaUI != null)
+            {
+                GameObject rootUI = vida.barraDeVidaUI.transform.root.gameObject;
+                protegidos.Add(rootUI);
+                foreach (Transform t in rootUI.GetComponentsInChildren<Transform>(true)) protegidos.Add(t.gameObject);
+            }
 
             var controller = jugador.GetComponent<CharacterController>();
             if (controller != null) controller.enabled = false;
@@ -78,21 +137,22 @@ public class LimpiadorDeEscena : MonoBehaviour
             if (controller != null) controller.enabled = true;
         }
 
-        // 4. Limpieza de escena
-        GameObject[] todos = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
-        foreach (GameObject obj in todos)
+        // 4. LIMPIEZA TOTAL
+        // Primero ejecutamos la limpieza de textos específica
+        EjecutarLimpiezaDeTextos();
+
+        // Luego borramos el resto de objetos decorativos/laberinto
+        GameObject[] todosActivos = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        foreach (GameObject obj in todosActivos)
         {
             if (obj == null || protegidos.Contains(obj)) continue;
-            
-            // Eliminar especficamente el texto de la misin vieja si aparece
-            TextMesh tmOld = obj.GetComponent<TextMesh>();
-            if (tmOld != null && (tmOld.text.ToUpper().Contains("CAJAS") || tmOld.text.ToUpper().Contains("ESCAPE") || tmOld.text.ToUpper().Contains("MISI"))) { Destroy(obj); continue; }
-            
-            TMP_Text tmpOld = obj.GetComponent<TMP_Text>(); 
-            if (tmpOld != null && (tmpOld.text.ToUpper().Contains("CAJAS") || tmpOld.text.ToUpper().Contains("ESCAPE") || tmpOld.text.ToUpper().Contains("MISI"))) { Destroy(obj); continue; }
 
-            if (obj.GetComponent<Camera>() != null || obj.GetComponent<Light>() != null || 
-                obj.name.Contains("Canvas") || obj.name.Contains("Input") || obj.name.Contains("Camera")) continue;
+            // No borrar sistemas vitales
+            if (obj.GetComponent<Camera>() != null || 
+                obj.GetComponent<Light>() != null || 
+                obj.name.Contains("Input") || 
+                obj.name.Contains("EventSystem") ||
+                obj.name.Contains("MainCamera")) continue;
             
             Destroy(obj);
         }
@@ -120,26 +180,20 @@ public class LimpiadorDeEscena : MonoBehaviour
             container.transform.position = new Vector3(Random.Range(-25, 25), 2, Random.Range(10, 40));
             container.transform.localScale = Vector3.one * 3f;
             container.tag = "Cargable";
-            container.layer = 0; // Regresamos a Default para que el raycast lo detecte
 
             var inst = gltf.InstantiateMainSceneAsync(container.transform);
             while (!inst.IsCompleted) yield return null;
 
-            // Limpieza de componentes internos
+            // Limpieza de cámaras internas
             Component[] componentes = container.GetComponentsInChildren<Component>(true);
             foreach (var comp in componentes)
             {
                 if (comp == null || comp is Transform || comp is MeshRenderer || comp is MeshFilter || comp is SkinnedMeshRenderer) 
                     continue;
-                
-                string nombreTipo = comp.GetType().Name;
-                if (comp is Camera || comp is AudioListener || nombreTipo.Contains("Cinemachine") || nombreTipo.Contains("Camera"))
-                {
+                if (comp is Camera || comp is AudioListener || comp.GetType().Name.Contains("Cinemachine"))
                     Destroy(comp);
-                }
             }
 
-            // Fsicas y Colisin
             Rigidbody rb = container.AddComponent<Rigidbody>();
             rb.mass = 2f;
             

@@ -50,6 +50,10 @@ public class LimpiadorDeEscena : MonoBehaviour
         {
             if (obj == null || obj.scene.name == null) continue;
             string nombre = obj.name.ToUpper();
+
+            // PROTECCIÓN DE UI
+            if (obj.GetComponent<Canvas>() != null || obj.GetComponent<Slider>() != null || nombre.Contains("BARRA") || nombre.Contains("VIDA")) continue;
+
             if (nombre.Contains("MISION") || nombre.Contains("ESCAPE") || nombre.Contains("CAJA") || nombre.Contains("TUTORIAL"))
             {
                 if (obj.activeInHierarchy) Destroy(obj);
@@ -138,6 +142,14 @@ public class LimpiadorDeEscena : MonoBehaviour
             protegidos.Add(jugador);
             foreach (Transform t in jugador.GetComponentsInChildren<Transform>(true)) protegidos.Add(t.gameObject);
             
+            // PROTEGER UI DEL JUGADOR
+            VidaJugador vidaComp = jugador.GetComponent<VidaJugador>();
+            if (vidaComp != null && vidaComp.barraDeVidaUI != null) {
+                GameObject rootUI = vidaComp.barraDeVidaUI.transform.root.gameObject;
+                protegidos.Add(rootUI);
+                foreach (Transform t in rootUI.GetComponentsInChildren<Transform>(true)) protegidos.Add(t.gameObject);
+            }
+
             GameObject cam = GameObject.Find("PlayerFollowCamera");
             if (cam != null) protegidos.Add(cam);
             
@@ -165,6 +177,10 @@ public class LimpiadorDeEscena : MonoBehaviour
         foreach (GameObject obj in todosActivos)
         {
             if (obj == null || protegidos.Contains(obj)) continue;
+            
+            // PROTEGER CUALQUIER CANVAS
+            if (obj.GetComponent<Canvas>() != null || obj.GetComponent<Slider>() != null) continue;
+
             // No borrar enemigos en la limpieza inicial
             if (obj.GetComponent<VidaEnemigo>() != null) continue;
             
@@ -177,6 +193,11 @@ public class LimpiadorDeEscena : MonoBehaviour
         if (nombreEscena == "EscenarioCalavera")
         {
             StartCoroutine(CargarMapaCalavera(jugador));
+        }
+        else if (nombreEscena == "Nivel 1")
+        {
+            GenerarControlesTutorial();
+            StartCoroutine(GenerarMuseoDiaDeMuertos());
         }
     }
 
@@ -339,6 +360,65 @@ public class LimpiadorDeEscena : MonoBehaviour
                 bc.size = mr.bounds.size;
                 bc.isTrigger = false;
             } else container.AddComponent<SphereCollider>();
+        }
+    }
+
+    void GenerarControlesTutorial()
+    {
+        GameObject info = new GameObject("Controles_Tutorial");
+        info.transform.position = new Vector3(-10, 3, 2);
+        TextMesh tm = info.AddComponent<TextMesh>();
+        tm.text = "CONTROLES:\nWASD - MOVERSE\nESPACIO - SALTAR\nE - AGARRAR/SOLTAR PAN\nESC - PAUSA";
+        tm.fontSize = 10;
+        tm.color = Color.yellow;
+        tm.anchor = TextAnchor.UpperLeft;
+    }
+
+    IEnumerator GenerarMuseoDiaDeMuertos()
+    {
+        string[] modelos = { "altar", "flor", "craneo", "catrin", "papel_picado" };
+        string[] descripciones = {
+            "EL ALTAR: Ofrenda para honrar a los difuntos.",
+            "FLOR CEMPASÚCHIL: Guía las almas con su aroma.",
+            "CALAVERA DE AZÚCAR: Aceptación de la muerte.",
+            "EL CATRÍN: La muerte nos iguala a todos.",
+            "PAPEL PICADO: Representa el aire y la alegría."
+        };
+
+        for (int i = 0; i < modelos.Length; i++)
+        {
+            TextAsset data = Resources.Load<TextAsset>(modelos[i]);
+            if (data == null) continue;
+
+            var gltf = new GltfImport();
+            var success = gltf.LoadGltfBinary(data.bytes);
+            while (!success.IsCompleted) yield return null;
+
+            if (success.Result)
+            {
+                GameObject expo = new GameObject("Exposicion_" + modelos[i]);
+                expo.transform.position = new Vector3(10, 0, 5 + (i * 5));
+                
+                GameObject modeloObj = new GameObject("Modelo");
+                modeloObj.transform.SetParent(expo.transform);
+                modeloObj.transform.localPosition = Vector3.up * 1f;
+                modeloObj.transform.localScale = Vector3.one * (modelos[i] == "altar" ? 0.5f : 1.5f);
+                
+                var inst = gltf.InstantiateMainSceneAsync(modeloObj.transform);
+                while (!inst.IsCompleted) yield return null;
+                
+                if (modelos[i] != "altar") modeloObj.AddComponent<GirarItem>();
+
+                GameObject texto = new GameObject("Descripcion");
+                texto.transform.SetParent(expo.transform);
+                texto.transform.localPosition = new Vector3(0, 3, 0);
+                TextMesh tm = texto.AddComponent<TextMesh>();
+                tm.text = descripciones[i];
+                tm.fontSize = 8;
+                tm.anchor = TextAnchor.MiddleCenter;
+                tm.alignment = TextAlignment.Center;
+                tm.color = Color.cyan;
+            }
         }
     }
 }

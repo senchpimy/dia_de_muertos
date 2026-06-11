@@ -94,20 +94,20 @@ public class LimpiadorDeEscena : MonoBehaviour
         GameObject texto3D = new GameObject("Texto3D_Informativo");
         TextMesh tm = texto3D.AddComponent<TextMesh>();
         tm.text = nombreEscena == "EscenarioCalavera" ? "¡CUIDADO CON LOS ENEMIGOS!\nLleva el pan a la meta." : "¡BIENVENIDO!\nUsa el portal para ir a la calavera.";
-        tm.fontSize = 60;
-        tm.characterSize = 0.2f;
+        tm.fontSize = 120;
+        tm.characterSize = 0.05f;
         tm.anchor = TextAnchor.MiddleCenter;
         tm.alignment = TextAlignment.Center;
         tm.color = Color.white;
-        texto3D.transform.position = new Vector3(0, 10, 20);
+        texto3D.transform.position = new Vector3(0, 8, 85);
 
         GameObject botonPortal = null;
         if (nombreEscena == "Nivel 1")
         {
             botonPortal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             botonPortal.name = "BOTON_PORTAL_CALAVERA";
-            // Posicionado en línea recta frente al spawn del jugador (Z=20)
-            botonPortal.transform.position = new Vector3(0, 0.1f, 20); 
+            // Posicionado cerca del final del museo (Z=85)
+            botonPortal.transform.position = new Vector3(0, 0.1f, 85); 
             botonPortal.transform.localScale = new Vector3(2, 0.1f, 2);
             botonPortal.GetComponent<Renderer>().material.color = Color.magenta;
             botonPortal.GetComponent<Collider>().isTrigger = true;
@@ -115,10 +115,11 @@ public class LimpiadorDeEscena : MonoBehaviour
 
             GameObject textoBoton = new GameObject("TextoBoton");
             textoBoton.transform.SetParent(botonPortal.transform);
-            textoBoton.transform.localPosition = new Vector3(0, 10, 0);
+            textoBoton.transform.localPosition = new Vector3(0, 8, 0); 
             TextMesh tmBoton = textoBoton.AddComponent<TextMesh>();
             tmBoton.text = "PÍSAME PARA IR\nA LA CALAVERA";
-            tmBoton.fontSize = 40;
+            tmBoton.fontSize = 100;
+            tmBoton.characterSize = 0.05f;
             tmBoton.anchor = TextAnchor.MiddleCenter;
             tmBoton.alignment = TextAlignment.Center;
             tmBoton.color = Color.magenta;
@@ -352,6 +353,18 @@ public class LimpiadorDeEscena : MonoBehaviour
             }
             Rigidbody rb = container.AddComponent<Rigidbody>();
             rb.mass = 2f;
+
+            // --- NUEVO: BRILLO PARA LOS PANES ---
+            GameObject luzPan = new GameObject("Luz_Pan");
+            luzPan.transform.SetParent(container.transform);
+            luzPan.transform.localPosition = new Vector3(0, 0.5f, 0);
+            Light luz = luzPan.AddComponent<Light>();
+            luz.type = LightType.Point;
+            luz.color = new Color(1.0f, 0.6f, 0.2f); // Naranja cálido
+            luz.intensity = 5f;
+            luz.range = 8f;
+            // ------------------------------------
+
             MeshRenderer mr = container.GetComponentInChildren<MeshRenderer>();
             if (mr != null)
             {
@@ -402,12 +415,17 @@ public class LimpiadorDeEscena : MonoBehaviour
                 
                 GameObject modeloObj = new GameObject("Modelo");
                 modeloObj.transform.SetParent(expo.transform);
-                modeloObj.transform.localPosition = Vector3.up * 1f;
-
-                // Flor 5 veces más grande (1.5 * 5 = 7.5)
+                
+                // Flor 5 veces más grande (1.5 * 5 = 7.5) y 10 unidades más abajo
                 float escalaBase = (modelos[i] == "altar" ? 0.5f : 1.5f);
-                if (modelos[i] == "flor") escalaBase = 7.5f;
+                float offset_y = 1f;
 
+                if (modelos[i] == "flor") {
+                    escalaBase = 7.5f;
+                    offset_y = -9f; // Bajado 10 unidades (1 - 10)
+                }
+
+                modeloObj.transform.localPosition = Vector3.up * offset_y;
                 modeloObj.transform.localScale = Vector3.one * escalaBase;
                 
                 var inst = gltf.InstantiateMainSceneAsync(modeloObj.transform);

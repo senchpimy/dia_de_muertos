@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: Yukatakis
+  productName: Ofrenda El Camino Del Pan
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -851,14 +851,14 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Yukatakis
+  metroPackageName: Ofrenda El Camino Del Pan
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: Yukatakis
+  metroApplicationDescription: Ofrenda El Camino Del Pan
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
@@ -933,7 +933,7 @@ PlayerSettings:
   cloudProjectId: 0b0d7df5-089b-48d2-aa54-d961e4b1eabe
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Yukatakis 2026-05-19_15-00-36
+  projectName: 
   organizationId: jmvisaac117
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

@@ -198,11 +198,8 @@ public class LimpiadorDeEscena : MonoBehaviour
         foreach (GameObject obj in todosActivos)
         {
             if (obj == null || protegidos.Contains(obj)) continue;
-            
             if (obj.GetComponent<Canvas>() != null || obj.GetComponent<Slider>() != null) continue;
-
             if (obj.GetComponent<VidaEnemigo>() != null) continue;
-            
             if (obj.GetComponent<Camera>() != null || obj.GetComponent<Light>() != null || 
                 obj.name.Contains("Input") || obj.name.Contains("EventSystem") ||
                 obj.name.Contains("MainCamera")) continue;
@@ -238,7 +235,10 @@ public class LimpiadorDeEscena : MonoBehaviour
             while (!inst.IsCompleted) yield return null;
 
             foreach (var cam in mapa.GetComponentsInChildren<Camera>(true)) Destroy(cam.gameObject);
-            foreach (var mr in mapa.GetComponentsInChildren<MeshRenderer>(true)) mr.gameObject.AddComponent<MeshCollider>();
+            foreach (var mr in mapa.GetComponentsInChildren<MeshRenderer>(true)) {
+                mr.gameObject.AddComponent<MeshCollider>();
+                CorregirShadersParaWebGL(mr.gameObject);
+            }
             
             GenerarPowerUps();
             GenerarMetaVictoria();
@@ -252,6 +252,24 @@ public class LimpiadorDeEscena : MonoBehaviour
         }
     }
 
+    void CorregirShadersParaWebGL(GameObject obj)
+    {
+        Shader urpLit = Shader.Find("Universal Render Pipeline/Lit");
+        if (urpLit == null) return;
+
+        foreach (var mr in obj.GetComponentsInChildren<MeshRenderer>(true))
+        {
+            foreach (var mat in mr.materials)
+            {
+                // Solo reasignamos si el shader actual falla o no es URP Lit
+                if (mat.shader.name.Contains("InternalErrorShader") || mat.shader.name.Contains("glTF"))
+                {
+                    mat.shader = urpLit;
+                }
+            }
+        }
+    }
+
     void GenerarEnemigos(GameObject jugador)
     {
         GameObject prefabSkeleton = Resources.Load<GameObject>("Skeleton"); 
@@ -261,9 +279,7 @@ public class LimpiadorDeEscena : MonoBehaviour
             GameObject enemigo;
             if (prefabSkeleton != null) {
                 enemigo = Instantiate(prefabSkeleton);
-                Debug.Log("Esqueleto real instanciado.");
             } else {
-                Debug.LogWarning("No se encontró el prefab Skeleton en Resources. Usando cilindro.");
                 enemigo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 enemigo.GetComponent<Renderer>().material.color = Color.red;
                 enemigo.AddComponent<VidaEnemigo>();
@@ -273,11 +289,9 @@ public class LimpiadorDeEscena : MonoBehaviour
 
             enemigo.name = "EnemigoLento_" + i;
             enemigo.transform.position = new Vector3(Random.Range(-40, 40), -24, Random.Range(40, 80));
-            enemigo.transform.localScale = Vector3.one * 1.5f; // Un poco más grandes
+            enemigo.transform.localScale = Vector3.one * 1.5f;
 
-            if (enemigo.GetComponent<AtaqueEnemigo>() == null) {
-                enemigo.AddComponent<AtaqueEnemigo>();
-            }
+            if (enemigo.GetComponent<AtaqueEnemigo>() == null) enemigo.AddComponent<AtaqueEnemigo>();
             CapsuleCollider col = enemigo.GetComponent<CapsuleCollider>();
             if (col == null) col = enemigo.AddComponent<CapsuleCollider>();
             col.isTrigger = true;
@@ -286,12 +300,7 @@ public class LimpiadorDeEscena : MonoBehaviour
             
             NavMeshAgent agent = enemigo.GetComponent<NavMeshAgent>();
             if (agent == null) agent = enemigo.AddComponent<NavMeshAgent>();
-            
-            if (agent != null) {
-                agent.speed = 1.5f;
-                agent.acceleration = 4f;
-                agent.stoppingDistance = 2f;
-            }
+            if (agent != null) { agent.speed = 1.5f; agent.acceleration = 4f; agent.stoppingDistance = 2f; }
 
             SeguirJugador seguir = enemigo.GetComponent<SeguirJugador>();
             if (seguir == null) seguir = enemigo.AddComponent<SeguirJugador>();
@@ -366,6 +375,9 @@ public class LimpiadorDeEscena : MonoBehaviour
             container.tag = "Cargable";
             var inst = gltf.InstantiateMainSceneAsync(container.transform);
             while (!inst.IsCompleted) yield return null;
+
+            CorregirShadersParaWebGL(container);
+
             Component[] componentes = container.GetComponentsInChildren<Component>(true);
             foreach (var comp in componentes)
             {
@@ -448,6 +460,8 @@ public class LimpiadorDeEscena : MonoBehaviour
                 var inst = gltf.InstantiateMainSceneAsync(modeloObj.transform);
                 while (!inst.IsCompleted) yield return null;
                 
+                CorregirShadersParaWebGL(modeloObj);
+
                 if (modelos[i] != "altar") modeloObj.AddComponent<GirarItem>();
 
                 GameObject texto = new GameObject("Descripcion");

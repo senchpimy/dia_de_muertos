@@ -51,8 +51,10 @@ public class LimpiadorDeEscena : MonoBehaviour
             if (obj == null || obj.scene.name == null) continue;
             string nombre = obj.name.ToUpper();
 
-            // PROTECCIÓN DE UI
-            if (obj.GetComponent<Canvas>() != null || obj.GetComponent<Slider>() != null || nombre.Contains("BARRA") || nombre.Contains("VIDA")) continue;
+            // PROTECCIÓN DE UI Y TEXTOS FIJOS
+            if (obj.GetComponent<Canvas>() != null || obj.GetComponent<Slider>() != null || 
+                nombre.Contains("BARRA") || nombre.Contains("VIDA") || 
+                nombre.Contains("INFO_CONTROLES") || nombre.Contains("HISTORIA_OFRENDA")) continue;
 
             if (nombre.Contains("MISION") || nombre.Contains("ESCAPE") || nombre.Contains("CAJA") || nombre.Contains("TUTORIAL"))
             {
@@ -379,11 +381,12 @@ public class LimpiadorDeEscena : MonoBehaviour
     void GenerarControlesTutorial()
     {
         GameObject info = new GameObject("Controles_Tutorial");
-        info.transform.position = new Vector3(-10, 3, 2);
+        info.name = "INFO_CONTROLES_FIJO"; // Nombre único para protegerlo
+        info.transform.position = new Vector3(-10, 3, 5); // Movido más adelante (Z=5)
         TextMesh tm = info.AddComponent<TextMesh>();
         tm.text = "CONTROLES:\nWASD - MOVERSE\nESPACIO - SALTAR\nE - AGARRAR/SOLTAR PAN\nESC - PAUSA";
-        tm.fontSize = 120; // Resolución alta
-        tm.characterSize = 0.05f; // Escala visual baja
+        tm.fontSize = 120;
+        tm.characterSize = 0.05f;
         tm.color = Color.yellow;
         tm.anchor = TextAnchor.UpperLeft;
     }
@@ -411,19 +414,16 @@ public class LimpiadorDeEscena : MonoBehaviour
             if (success.Result)
             {
                 GameObject expo = new GameObject("Exposicion_" + modelos[i]);
-                expo.transform.position = new Vector3(10, 0, 5 + (i * 15)); // Espaciado mayor
+                expo.transform.position = new Vector3(10, 0, 5 + (i * 15)); 
                 
                 GameObject modeloObj = new GameObject("Modelo");
                 modeloObj.transform.SetParent(expo.transform);
                 
-                // Flor 5 veces más grande (1.5 * 5 = 7.5) y 10 unidades más abajo
                 float escalaBase = (modelos[i] == "altar" ? 0.5f : 1.5f);
                 float offset_y = 1f;
-
-                if (modelos[i] == "flor") {
-                    escalaBase = 7.5f;
-                    offset_y = -9f; // Bajado 10 unidades (1 - 10)
-                }
+                if (modelos[i] == "flor") { escalaBase = 7.5f; offset_y = -9f; }
+                else if (modelos[i] == "catrin") offset_y = -0.5f; 
+                else if (modelos[i] == "papel_picado") offset_y = 0.5f; 
 
                 modeloObj.transform.localPosition = Vector3.up * offset_y;
                 modeloObj.transform.localScale = Vector3.one * escalaBase;
@@ -438,12 +438,26 @@ public class LimpiadorDeEscena : MonoBehaviour
                 texto.transform.localPosition = new Vector3(0, 3, 0);
                 TextMesh tm = texto.AddComponent<TextMesh>();
                 tm.text = descripciones[i];
-                tm.fontSize = 100; // Resolución alta
-                tm.characterSize = 0.05f; // Escala visual baja
+                tm.fontSize = 100;
+                tm.characterSize = 0.05f;
                 tm.anchor = TextAnchor.MiddleCenter;
                 tm.alignment = TextAlignment.Center;
                 tm.color = Color.cyan;
             }
         }
+
+        // --- NUEVO: HISTORIA DE LA OFRENDA ANTES DEL BOTÓN ---
+        GameObject historia = new GameObject("HISTORIA_OFRENDA_TEXTO");
+        historia.transform.position = new Vector3(0, 4, 75); // Antes del botón que está en Z=85
+        TextMesh tmH = historia.AddComponent<TextMesh>();
+        tmH.text = "EL PAN DE MUERTO ES EL ALIMENTO DEL ALMA.\n" +
+                   "En el siguiente nivel, deberás recoger el pan\n" +
+                   "y colocarlo con respeto en el CENTRO DE LA OFRENDA.\n" +
+                   "Solo así el ciclo se completará y alcanzarás la victoria.";
+        tmH.fontSize = 90;
+        tmH.characterSize = 0.04f;
+        tmH.color = Color.white;
+        tmH.anchor = TextAnchor.MiddleCenter;
+        tmH.alignment = TextAlignment.Center;
     }
 }

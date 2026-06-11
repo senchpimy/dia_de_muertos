@@ -5,23 +5,43 @@ using TMPro;
 public class MenuManager : MonoBehaviour
 {
     public static bool esVictoria = false;
+    public static bool esGameOver = false;
     public TMP_Text textoTitulo; 
 
     void Start()
     {
-        // Si no se asign en el inspector, intentamos buscar el ttulo por cdigo
+        // Cargamos la fuente temática (loco)
+        TMP_FontAsset fuenteTematica = Resources.Load<TMP_FontAsset>("fonts/loco") ?? Resources.Load<TMP_FontAsset>("loco");
+
+        // Si no se asignó en el inspector, buscamos el objeto del título
         if (textoTitulo == null)
         {
-            // Buscamos un objeto que se llame 'Title' o similar, o simplemente el primer TMP_Text
+            // Buscamos el título ignorando el nombre antiguo
             GameObject objTitulo = GameObject.Find("Title") ?? GameObject.Find("Titulo") ?? GameObject.Find("YUKATAKIS");
             if (objTitulo != null) textoTitulo = objTitulo.GetComponent<TMP_Text>();
         }
 
-        if (esVictoria && textoTitulo != null)
+        if (textoTitulo != null)
         {
-            textoTitulo.text = "¡VICTORIA!";
-            textoTitulo.color = Color.green;
-            esVictoria = false; 
+            // Título temático y ajuste de tamaño
+            textoTitulo.text = "OFRENDA: EL CAMINO DEL PAN";
+            if (fuenteTematica != null) textoTitulo.font = fuenteTematica;
+            textoTitulo.fontSize = 60; // Reducimos el tamaño
+            textoTitulo.color = new Color(1.0f, 0.5f, 0.0f); // Naranja vibrante
+            textoTitulo.alignment = TextAlignmentOptions.Center;
+
+            if (esVictoria)
+            {
+                textoTitulo.text = "¡OFRENDA COMPLETADA!";
+                textoTitulo.color = Color.green;
+                esVictoria = false; 
+            }
+            else if (esGameOver)
+            {
+                textoTitulo.text = "ALMA PERDIDA";
+                textoTitulo.color = Color.red;
+                esGameOver = false;
+            }
         }
     }
 

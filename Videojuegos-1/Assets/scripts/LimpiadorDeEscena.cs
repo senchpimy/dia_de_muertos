@@ -36,10 +36,35 @@ public class LimpiadorDeEscena : MonoBehaviour
 
     IEnumerator LimpiadorPersistente()
     {
+        // --- NUEVO: CONFIGURACIÓN DE MENÚ PRINCIPAL ---
+        if (SceneManager.GetActiveScene().name == "MenuMain") {
+            ConfigurarMenuPrincipal();
+        }
+
         for (int i = 0; i < 5; i++)
         {
             EjecutarLimpiezaDeTextos();
             yield return new WaitForSeconds(1f);
+        }
+    }
+
+    void ConfigurarMenuPrincipal()
+    {
+        // 1. Eliminar el botón de selección de niveles
+        GameObject btnSelector = GameObject.Find("BtnSelector") ?? GameObject.Find("LevelSelector") ?? GameObject.Find("Selector");
+        if (btnSelector != null) btnSelector.SetActive(false);
+
+        // 2. Cambiar la fuente de los botones y el título si es necesario
+        TMP_FontAsset fuenteTematica = Resources.Load<TMP_FontAsset>("fonts/Smythe-Regular") ?? Resources.Load<TMP_FontAsset>("Smythe-Regular");
+        
+        // Aplicar a todos los botones
+        Button[] botones = GameObject.FindObjectsByType<Button>(FindObjectsSortMode.None);
+        foreach (Button b in botones) {
+            TMP_Text t = b.GetComponentInChildren<TMP_Text>();
+            if (t != null && fuenteTematica != null) {
+                t.font = fuenteTematica;
+                t.color = Color.white;
+            }
         }
     }
 
@@ -263,6 +288,17 @@ public class LimpiadorDeEscena : MonoBehaviour
             // Ajustado a la altura de los powerups (Y = -24) subido 1 unidad mas
             enemigo.transform.position = new Vector3(Random.Range(-40, 40), -24, Random.Range(40, 80));
             enemigo.transform.localScale = Vector3.one * 1.5f; // Un poco más grandes
+
+            // --- NUEVO: CONFIGURACIÓN DE DAÑO ---
+            if (enemigo.GetComponent<AtaqueEnemigo>() == null) {
+                enemigo.AddComponent<AtaqueEnemigo>();
+            }
+            CapsuleCollider col = enemigo.GetComponent<CapsuleCollider>();
+            if (col == null) col = enemigo.AddComponent<CapsuleCollider>();
+            col.isTrigger = true;
+            col.center = new Vector3(0, 1, 0);
+            col.height = 2;
+            // ------------------------------------
             
             // Asegurar componentes de IA
             NavMeshAgent agent = enemigo.GetComponent<NavMeshAgent>();

@@ -176,9 +176,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Cr\xE9ditos"
+  m_text: "CR\xC9DITOS"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a84206749b91ecf4aac2ee4c46e0f7c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 631908dbe4665264db64bfb861cc94a1, type: 2}
   m_sharedMaterial: {fileID: 5535307698613820184, guid: a84206749b91ecf4aac2ee4c46e0f7c1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -203,8 +203,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 70
-  m_fontSizeBase: 70
+  m_fontSize: 45
+  m_fontSizeBase: 45
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -903,17 +903,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: YUKATAKIS
+  m_text: "OFRENDA: EL CAMINO DEL PAN"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: ecd3e2f24785f3a4e9d58436510f099c, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 631908dbe4665264db64bfb861cc94a1, type: 2}
   m_sharedMaterial: {fileID: 4320674505940990286, guid: ecd3e2f24785f3a4e9d58436510f099c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4286611455
+  m_fontColor: {r: 1, g: 0.5, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -930,8 +930,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 100
-  m_fontSizeBase: 100
+  m_fontSize: 60
+  m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1040,9 +1040,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Jugar
+  m_text: COMENZAR VIAJE
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a84206749b91ecf4aac2ee4c46e0f7c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 631908dbe4665264db64bfb861cc94a1, type: 2}
   m_sharedMaterial: {fileID: 5535307698613820184, guid: a84206749b91ecf4aac2ee4c46e0f7c1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -1067,8 +1067,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 70
-  m_fontSizeBase: 70
+  m_fontSize: 45
+  m_fontSizeBase: 45
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1610,9 +1610,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Selector \nde nivel"
+  m_text: SELECCIONAR NIVEL
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a84206749b91ecf4aac2ee4c46e0f7c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 631908dbe4665264db64bfb861cc94a1, type: 2}
   m_sharedMaterial: {fileID: 5535307698613820184, guid: a84206749b91ecf4aac2ee4c46e0f7c1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -1637,8 +1637,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 65
-  m_fontSizeBase: 65
+  m_fontSize: 45
+  m_fontSizeBase: 45
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1747,7 +1747,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 39dfd583632a0cd4abe2a2976af798cc, type: 3}
+  m_Texture: {fileID: 2800000, guid: abfb9f724a6d4076a278210168d07ef3, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0

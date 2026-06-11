@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement; // Necesario para reiniciar el nivel al morir
-using UnityEngine.UI; // 1. OBLIGATORIO: Agregamos la librería de Interfaz de Usuario
+using UnityEngine.UI; // 1. OBLIGATORIO: Agregamos la librerï¿½a de Interfaz de Usuario
 
 public class VidaJugador : MonoBehaviour
 {
@@ -15,15 +15,15 @@ public class VidaJugador : MonoBehaviour
     {
         if (barraDeVidaUI != null)
         {
-            barraDeVidaUI.maxValue = vida; // Le decimos que el máximo es 10
-            barraDeVidaUI.value = vida;    // La llenamos al máximo
+            barraDeVidaUI.maxValue = vida; // Le decimos que el mï¿½ximo es 10
+            barraDeVidaUI.value = vida;    // La llenamos al mï¿½ximo
         }
     }
 
     public void RecibirDanio(int danio)
     {
         vida -= danio;
-        Debug.Log("¡El esqueleto te golpeó! Vida restante: " + vida);
+        Debug.Log("ï¿½El esqueleto te golpeï¿½! Vida restante: " + vida);
 
         // 4. Actualizamos el valor visual de la barra para que baje
         if (barraDeVidaUI != null)
@@ -33,14 +33,15 @@ public class VidaJugador : MonoBehaviour
 
         if (vida <= 0)
         {
-            Debug.Log("¡Has muerto! Reiniciando nivel...");
+            Debug.Log("ï¿½Has muerto! Reiniciando nivel...");
             Morir();
         }
     }
 
     void Morir()
     {
-        // Esto recarga la escena actual en la que estés jugando
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        // En lugar de reiniciar, vamos al menÃº con pantalla de Game Over
+        MenuManager.esGameOver = true;
+        SceneManager.LoadScene("MenuMain");
     }
 }

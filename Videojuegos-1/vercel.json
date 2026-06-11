@@ -1,6 +1,9 @@
 {
-  "public": true,
   "rewrites": [
+    {
+      "source": "/",
+      "destination": "/docs/index.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/docs/$1"
@@ -8,81 +11,15 @@
   ],
   "headers": [
     {
-      "source": "/docs/Build/(.*)\\.gz",
+      "source": "/Build/(.*).gz",
       "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/octet-stream"
-        }
+        { "key": "Content-Encoding", "value": "gzip" }
       ]
     },
     {
-      "source": "/docs/Build/(.*)\\.wasm\\.gz",
+      "source": "/Build/(.*).br",
       "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/wasm"
-        }
-      ]
-    },
-    {
-      "source": "/docs/Build/(.*)\\.js\\.gz",
-      "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/javascript"
-        }
-      ]
-    },
-    {
-      "source": "/docs/Build/(.*)\\.br",
-      "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "br"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/octet-stream"
-        }
-      ]
-    },
-    {
-      "source": "/docs/Build/(.*)\\.wasm\\.br",
-      "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "br"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/wasm"
-        }
-      ]
-    },
-    {
-      "source": "/docs/Build/(.*)\\.js\\.br",
-      "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "br"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/javascript"
-        }
+        { "key": "Content-Encoding", "value": "br" }
       ]
     }
   ]

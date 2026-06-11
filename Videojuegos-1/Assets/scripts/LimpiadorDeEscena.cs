@@ -369,7 +369,8 @@ public class LimpiadorDeEscena : MonoBehaviour
         info.transform.position = new Vector3(-10, 3, 2);
         TextMesh tm = info.AddComponent<TextMesh>();
         tm.text = "CONTROLES:\nWASD - MOVERSE\nESPACIO - SALTAR\nE - AGARRAR/SOLTAR PAN\nESC - PAUSA";
-        tm.fontSize = 10;
+        tm.fontSize = 120; // Resolución alta
+        tm.characterSize = 0.05f; // Escala visual baja
         tm.color = Color.yellow;
         tm.anchor = TextAnchor.UpperLeft;
     }
@@ -397,12 +398,17 @@ public class LimpiadorDeEscena : MonoBehaviour
             if (success.Result)
             {
                 GameObject expo = new GameObject("Exposicion_" + modelos[i]);
-                expo.transform.position = new Vector3(10, 0, 5 + (i * 5));
+                expo.transform.position = new Vector3(10, 0, 5 + (i * 15)); // Espaciado mayor
                 
                 GameObject modeloObj = new GameObject("Modelo");
                 modeloObj.transform.SetParent(expo.transform);
                 modeloObj.transform.localPosition = Vector3.up * 1f;
-                modeloObj.transform.localScale = Vector3.one * (modelos[i] == "altar" ? 0.5f : 1.5f);
+
+                // Flor 5 veces más grande (1.5 * 5 = 7.5)
+                float escalaBase = (modelos[i] == "altar" ? 0.5f : 1.5f);
+                if (modelos[i] == "flor") escalaBase = 7.5f;
+
+                modeloObj.transform.localScale = Vector3.one * escalaBase;
                 
                 var inst = gltf.InstantiateMainSceneAsync(modeloObj.transform);
                 while (!inst.IsCompleted) yield return null;
@@ -414,7 +420,8 @@ public class LimpiadorDeEscena : MonoBehaviour
                 texto.transform.localPosition = new Vector3(0, 3, 0);
                 TextMesh tm = texto.AddComponent<TextMesh>();
                 tm.text = descripciones[i];
-                tm.fontSize = 8;
+                tm.fontSize = 100; // Resolución alta
+                tm.characterSize = 0.05f; // Escala visual baja
                 tm.anchor = TextAnchor.MiddleCenter;
                 tm.alignment = TextAlignment.Center;
                 tm.color = Color.cyan;

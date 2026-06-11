@@ -40,10 +40,10 @@ public class LimpiadorDeEscena : MonoBehaviour
             ConfigurarMenuPrincipal();
         }
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
         {
             EjecutarLimpiezaDeTextos();
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1.5f);
         }
     }
 
@@ -54,7 +54,7 @@ public class LimpiadorDeEscena : MonoBehaviour
 
         TMP_FontAsset fuenteTematica = Resources.Load<TMP_FontAsset>("fonts/Smythe-Regular") ?? Resources.Load<TMP_FontAsset>("Smythe-Regular");
         
-        Button[] botones = GameObject.FindObjectsByType<Button>(FindObjectsSortMode.None);
+        Button[] botones = GameObject.FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (Button b in botones) {
             TMP_Text t = b.GetComponentInChildren<TMP_Text>();
             if (t != null && fuenteTematica != null) {
@@ -66,14 +66,13 @@ public class LimpiadorDeEscena : MonoBehaviour
 
     void EjecutarLimpiezaDeTextos()
     {
-        GameObject[] todos = Resources.FindObjectsOfTypeAll<GameObject>();
+        GameObject[] todos = GameObject.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (GameObject obj in todos)
         {
-            if (obj == null || obj.scene.name == null) continue;
+            if (obj == null) continue;
             string nombre = obj.name.ToUpper();
 
-            if (obj.GetComponent<Canvas>() != null || obj.GetComponent<Slider>() != null || 
-                nombre.Contains("BARRA") || nombre.Contains("VIDA") || 
+            if (nombre.Contains("BARRA") || nombre.Contains("VIDA") || 
                 nombre.Contains("INFO_CONTROLES") || nombre.Contains("HISTORIA_OFRENDA")) continue;
 
             if (nombre.Contains("MISION") || nombre.Contains("ESCAPE") || nombre.Contains("CAJA") || nombre.Contains("TUTORIAL"))
@@ -82,12 +81,17 @@ public class LimpiadorDeEscena : MonoBehaviour
                 else obj.SetActive(false);
                 continue;
             }
-            Text legacyText = obj.GetComponent<Text>();
-            if (legacyText != null && TextoContieneMision(legacyText.text)) { Destroy(obj); continue; }
-            TMP_Text tmpText = obj.GetComponent<TMP_Text>();
-            if (tmpText != null && TextoContieneMision(tmpText.text)) { Destroy(obj); continue; }
-            TextMesh tm = obj.GetComponent<TextMesh>();
-            if (tm != null && TextoContieneMision(tm.text)) { Destroy(obj); continue; }
+            
+            if (obj.GetComponent<Canvas>() == null) {
+                Text legacyText = obj.GetComponent<Text>();
+                if (legacyText != null && TextoContieneMision(legacyText.text)) { Destroy(obj); continue; }
+
+                TMP_Text tmpText = obj.GetComponent<TMP_Text>();
+                if (tmpText != null && TextoContieneMision(tmpText.text)) { Destroy(obj); continue; }
+
+                TextMesh tm = obj.GetComponent<TextMesh>();
+                if (tm != null && TextoContieneMision(tm.text)) { Destroy(obj); continue; }
+            }
         }
     }
 
@@ -98,9 +102,25 @@ public class LimpiadorDeEscena : MonoBehaviour
         return upper.Contains("MISI") || upper.Contains("ESCAPE") || upper.Contains("CAJA");
     }
 
+    // Helper para crear materiales compatibles con URP en WebGL
+    Material CrearMaterialURP(Color color, string nombreReferencia = "")
+    {
+        Shader s = Shader.Find("Universal Render Pipeline/Lit");
+        if (s == null) s = Shader.Find("Universal Render Pipeline/Simple Lit");
+        if (s == null) s = Shader.Find("Universal Render Pipeline/Unlit");
+        
+        Material m = new Material(s != null ? s : Shader.Find("Sprites/Default"));
+        m.name = "Material_Fijo_" + nombreReferencia;
+
+        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
+        else if (m.HasProperty("_Color")) m.color = color;
+        
+        return m;
+    }
+
     IEnumerator ForzarPlataformaYLimpieza(string nombreEscena)
     {
-        yield return new WaitForSeconds(0.05f);
+        yield return new WaitForSeconds(0.1f);
 
         GameObject plataforma = null;
         if (nombreEscena != "EscenarioCalavera")
@@ -109,7 +129,8 @@ public class LimpiadorDeEscena : MonoBehaviour
             plataforma.name = "SUELO_SEGURO_ESTABLE";
             plataforma.transform.position = new Vector3(0, -0.5f, 0);
             plataforma.transform.localScale = new Vector3(200, 1, 200);
-            plataforma.GetComponent<Renderer>().material.color = new Color(0.15f, 0.15f, 0.15f);
+            // Asignar material URP directamente
+            plataforma.GetComponent<Renderer>().material = CrearMaterialURP(new Color(0.15f, 0.15f, 0.15f), "Suelo");
             plataforma.layer = 0; 
         }
 
@@ -130,7 +151,8 @@ public class LimpiadorDeEscena : MonoBehaviour
             botonPortal.name = "BOTON_PORTAL_CALAVERA";
             botonPortal.transform.position = new Vector3(0, 0.1f, 85); 
             botonPortal.transform.localScale = new Vector3(2, 0.1f, 2);
-            botonPortal.GetComponent<Renderer>().material.color = Color.magenta;
+            // Asignar material URP directamente
+            botonPortal.GetComponent<Renderer>().material = CrearMaterialURP(Color.magenta, "Portal");
             botonPortal.GetComponent<Collider>().isTrigger = true;
             botonPortal.AddComponent<BotonTeletransporte>();
 
@@ -194,7 +216,7 @@ public class LimpiadorDeEscena : MonoBehaviour
 
         EjecutarLimpiezaDeTextos();
 
-        GameObject[] todosActivos = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        GameObject[] todosActivos = GameObject.FindObjectsByType<GameObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         foreach (GameObject obj in todosActivos)
         {
             if (obj == null || protegidos.Contains(obj)) continue;
@@ -237,9 +259,10 @@ public class LimpiadorDeEscena : MonoBehaviour
             foreach (var cam in mapa.GetComponentsInChildren<Camera>(true)) Destroy(cam.gameObject);
             foreach (var mr in mapa.GetComponentsInChildren<MeshRenderer>(true)) {
                 mr.gameObject.AddComponent<MeshCollider>();
-                CorregirShadersParaWebGL(mr.gameObject);
             }
             
+            CorregirShadersParaWebGL(mapa);
+
             GenerarPowerUps();
             GenerarMetaVictoria();
             
@@ -255,18 +278,37 @@ public class LimpiadorDeEscena : MonoBehaviour
     void CorregirShadersParaWebGL(GameObject obj)
     {
         Shader urpLit = Shader.Find("Universal Render Pipeline/Lit");
+        if (urpLit == null) urpLit = Shader.Find("Universal Render Pipeline/Simple Lit");
         if (urpLit == null) return;
 
-        foreach (var mr in obj.GetComponentsInChildren<MeshRenderer>(true))
+        foreach (var mr in obj.GetComponentsInChildren<Renderer>(true))
         {
-            foreach (var mat in mr.materials)
+            Material[] mats = mr.materials; 
+            bool modificado = false;
+
+            for (int i = 0; i < mats.Length; i++)
             {
-                // Solo reasignamos si el shader actual falla o no es URP Lit
-                if (mat.shader.name.Contains("InternalErrorShader") || mat.shader.name.Contains("glTF"))
+                Material mat = mats[i];
+                if (mat == null) continue;
+
+                if (mat.shader.name.Contains("InternalErrorShader") || 
+                    mat.shader.name.Contains("glTF") || 
+                    mat.shader.name == "Standard" || 
+                    !mat.shader.name.Contains("Lit"))
                 {
+                    Color colorBase = mat.HasProperty("_BaseColor") ? mat.GetColor("_BaseColor") : 
+                                     mat.HasProperty("_Color") ? mat.color : Color.white;
+                    
+                    Texture texBase = mat.HasProperty("_BaseMap") ? mat.GetTexture("_BaseMap") : 
+                                     mat.HasProperty("_MainTex") ? mat.mainTexture : null;
+
                     mat.shader = urpLit;
+                    mat.SetColor("_BaseColor", colorBase);
+                    if (texBase != null) mat.SetTexture("_BaseMap", texBase);
+                    modificado = true;
                 }
             }
+            if (modificado) mr.materials = mats; 
         }
     }
 
@@ -281,7 +323,7 @@ public class LimpiadorDeEscena : MonoBehaviour
                 enemigo = Instantiate(prefabSkeleton);
             } else {
                 enemigo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                enemigo.GetComponent<Renderer>().material.color = Color.red;
+                enemigo.GetComponent<Renderer>().material = CrearMaterialURP(Color.red, "Enemigo");
                 enemigo.AddComponent<VidaEnemigo>();
                 enemigo.AddComponent<SeguirJugador>();
                 enemigo.AddComponent<Animator>(); 
@@ -319,7 +361,8 @@ public class LimpiadorDeEscena : MonoBehaviour
             pu.name = "PowerUp_Salto_" + i;
             pu.transform.position = new Vector3(Random.Range(-50, 50), -22, Random.Range(-50, 50));
             pu.transform.localScale = Vector3.one * 0.75f; 
-            pu.GetComponent<Renderer>().material.color = Color.cyan;
+            pu.GetComponent<Renderer>().material = CrearMaterialURP(Color.cyan, "PowerUp");
+
             GameObject luzObj = new GameObject("Luz_PU");
             luzObj.transform.SetParent(pu.transform);
             luzObj.transform.localPosition = Vector3.zero;
@@ -340,7 +383,8 @@ public class LimpiadorDeEscena : MonoBehaviour
         meta.name = "PLATAFORMA_META";
         meta.transform.position = new Vector3(0, -24, 10); 
         meta.transform.localScale = new Vector3(5, 0.5f, 5);
-        meta.GetComponent<Renderer>().material.color = Color.yellow;
+        meta.GetComponent<Renderer>().material = CrearMaterialURP(Color.yellow, "Meta");
+        
         meta.GetComponent<Collider>().isTrigger = true;
         meta.AddComponent<MetaFinal>();
         GameObject luzMeta = new GameObject("Luz_Meta");

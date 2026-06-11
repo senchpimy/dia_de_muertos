@@ -10,6 +10,10 @@ public class MenuManager : MonoBehaviour
 
     void Start()
     {
+        // Aseguramos que el cursor sea visible y esté libre al entrar al menú
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         // Cargamos la fuente temática (loco)
         TMP_FontAsset fuenteTematica = Resources.Load<TMP_FontAsset>("fonts/loco") ?? Resources.Load<TMP_FontAsset>("loco");
 

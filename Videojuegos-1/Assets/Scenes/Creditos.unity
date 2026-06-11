@@ -392,7 +392,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 3fe479d099312d74fb3a761b2971cc19, type: 3}
+  m_Texture: {fileID: 2800000, guid: abfb9f724a6d4076a278210168d07ef3, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -464,9 +464,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Creado por:\nSa\xFAl Isaac Ram\xEDrez Cort\xE9s"
+  m_text: "Creado por:\nLeonardo Isay Casta\xF1eda Avila"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a84206749b91ecf4aac2ee4c46e0f7c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 631908dbe4665264db64bfb861cc94a1, type: 2}
   m_sharedMaterial: {fileID: 5535307698613820184, guid: a84206749b91ecf4aac2ee4c46e0f7c1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}

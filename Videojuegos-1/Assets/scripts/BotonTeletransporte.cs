@@ -7,10 +7,9 @@ public class BotonTeletransporte : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Verificamos si es el jugador quien toca el botón
         if (other.CompareTag("Player") || other.GetComponent<CharacterController>() != null)
         {
-            Debug.Log("¡Botón presionado! Viajando a: " + nombreEscenaDestino);
+            Debug.Log("Boton presionado: " + nombreEscenaDestino);
             SceneManager.LoadScene(nombreEscenaDestino);
         }
     }

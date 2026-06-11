@@ -15,7 +15,6 @@ public class SelectorManager : MonoBehaviour
 
     public void RegresarMenu()
     {
-        // Esto te devolver� a la pantalla de inicio
         SceneManager.LoadScene("MenuMain");
     }
 }

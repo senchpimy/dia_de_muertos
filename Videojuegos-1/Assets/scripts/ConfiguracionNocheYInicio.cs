@@ -13,10 +13,8 @@ public class ConfiguracionNocheYInicio : MonoBehaviour
     {
         CrearLimpiador();
         
-        // Aplicar configuracin de noche
         AplicarNoche();
         
-        // Suscribirse para re-aplicar en cada cambio de escena
         SceneManager.sceneLoaded += (scene, mode) => {
             CrearLimpiador();
             AplicarNoche();
@@ -25,36 +23,32 @@ public class ConfiguracionNocheYInicio : MonoBehaviour
 
     static void CrearLimpiador()
     {
-        // Actualizado para usar FindAnyObjectByType (evita el warning de obsoleto)
         if (GameObject.FindAnyObjectByType<LimpiadorDeEscena>() == null)
         {
             GameObject go = new GameObject("Configuracion_Limpiador");
             go.AddComponent<LimpiadorDeEscena>();
-            GameObject.DontDestroyOnLoad(go); // Asegurar que sobreviva a las transiciones
+            GameObject.DontDestroyOnLoad(go);
         }
     }
 
     static void AplicarNoche()
     {
-        // Actualizado para usar FindObjectsByType (evita el warning de obsoleto)
         Light[] luces = GameObject.FindObjectsByType<Light>(FindObjectsSortMode.None);
         foreach (Light luz in luces)
         {
             if (luz.type == LightType.Directional)
             {
-                luz.intensity = 0.1f; // Mucha menos luz
-                luz.color = new Color(0.1f, 0.15f, 0.3f); // Tono azul oscuro nocturno
+                luz.intensity = 0.1f;
+                luz.color = new Color(0.1f, 0.15f, 0.3f);
             }
         }
 
-        // 2. Ajustar niebla y ambiente
         RenderSettings.fog = true;
         RenderSettings.fogColor = new Color(0.02f, 0.02f, 0.05f);
         RenderSettings.fogDensity = 0.02f;
         RenderSettings.ambientIntensity = 0.2f;
         RenderSettings.ambientLight = new Color(0.05f, 0.05f, 0.1f);
 
-        // 3. Intentar cargar el material de cielo nocturno
         Material skyboxNoche = Resources.Load<Material>("FS013_Night"); 
         
         if (RenderSettings.skybox != null)

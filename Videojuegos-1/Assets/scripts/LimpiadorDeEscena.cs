@@ -36,7 +36,6 @@ public class LimpiadorDeEscena : MonoBehaviour
 
     IEnumerator LimpiadorPersistente()
     {
-        // --- NUEVO: CONFIGURACIÓN DE MENÚ PRINCIPAL ---
         if (SceneManager.GetActiveScene().name == "MenuMain") {
             ConfigurarMenuPrincipal();
         }
@@ -50,14 +49,11 @@ public class LimpiadorDeEscena : MonoBehaviour
 
     void ConfigurarMenuPrincipal()
     {
-        // 1. Eliminar el botón de selección de niveles
         GameObject btnSelector = GameObject.Find("BtnSelector") ?? GameObject.Find("LevelSelector") ?? GameObject.Find("Selector");
         if (btnSelector != null) btnSelector.SetActive(false);
 
-        // 2. Cambiar la fuente de los botones y el título si es necesario
         TMP_FontAsset fuenteTematica = Resources.Load<TMP_FontAsset>("fonts/Smythe-Regular") ?? Resources.Load<TMP_FontAsset>("Smythe-Regular");
         
-        // Aplicar a todos los botones
         Button[] botones = GameObject.FindObjectsByType<Button>(FindObjectsSortMode.None);
         foreach (Button b in botones) {
             TMP_Text t = b.GetComponentInChildren<TMP_Text>();
@@ -76,7 +72,6 @@ public class LimpiadorDeEscena : MonoBehaviour
             if (obj == null || obj.scene.name == null) continue;
             string nombre = obj.name.ToUpper();
 
-            // PROTECCIÓN DE UI Y TEXTOS FIJOS
             if (obj.GetComponent<Canvas>() != null || obj.GetComponent<Slider>() != null || 
                 nombre.Contains("BARRA") || nombre.Contains("VIDA") || 
                 nombre.Contains("INFO_CONTROLES") || nombre.Contains("HISTORIA_OFRENDA")) continue;
@@ -133,7 +128,6 @@ public class LimpiadorDeEscena : MonoBehaviour
         {
             botonPortal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             botonPortal.name = "BOTON_PORTAL_CALAVERA";
-            // Posicionado cerca del final del museo (Z=85)
             botonPortal.transform.position = new Vector3(0, 0.1f, 85); 
             botonPortal.transform.localScale = new Vector3(2, 0.1f, 2);
             botonPortal.GetComponent<Renderer>().material.color = Color.magenta;
@@ -170,7 +164,6 @@ public class LimpiadorDeEscena : MonoBehaviour
             protegidos.Add(jugador);
             foreach (Transform t in jugador.GetComponentsInChildren<Transform>(true)) protegidos.Add(t.gameObject);
             
-            // PROTEGER UI DEL JUGADOR
             VidaJugador vidaComp = jugador.GetComponent<VidaJugador>();
             if (vidaComp != null && vidaComp.barraDeVidaUI != null) {
                 GameObject rootUI = vidaComp.barraDeVidaUI.transform.root.gameObject;
@@ -206,10 +199,8 @@ public class LimpiadorDeEscena : MonoBehaviour
         {
             if (obj == null || protegidos.Contains(obj)) continue;
             
-            // PROTEGER CUALQUIER CANVAS
             if (obj.GetComponent<Canvas>() != null || obj.GetComponent<Slider>() != null) continue;
 
-            // No borrar enemigos en la limpieza inicial
             if (obj.GetComponent<VidaEnemigo>() != null) continue;
             
             if (obj.GetComponent<Camera>() != null || obj.GetComponent<Light>() != null || 
@@ -252,20 +243,17 @@ public class LimpiadorDeEscena : MonoBehaviour
             GenerarPowerUps();
             GenerarMetaVictoria();
             
-            // Generar Panes (Reducido a 4)
             TextAsset glbDataPan = Resources.Load<TextAsset>("pan_de_muerto");
             if (glbDataPan != null) {
                 for (int i = 0; i < 4; i++) StartCoroutine(InstanciarPan(glbDataPan.bytes, i));
             }
 
-            // GENERAR ENEMIGOS LENTOS
             GenerarEnemigos(jugador);
         }
     }
 
     void GenerarEnemigos(GameObject jugador)
     {
-        // El prefab ahora está en Resources/Skeleton.prefab
         GameObject prefabSkeleton = Resources.Load<GameObject>("Skeleton"); 
         
         for (int i = 0; i < 6; i++)
@@ -280,16 +268,13 @@ public class LimpiadorDeEscena : MonoBehaviour
                 enemigo.GetComponent<Renderer>().material.color = Color.red;
                 enemigo.AddComponent<VidaEnemigo>();
                 enemigo.AddComponent<SeguirJugador>();
-                // Añadimos un Animator vacío para evitar errores si es un cilindro
                 enemigo.AddComponent<Animator>(); 
             }
 
             enemigo.name = "EnemigoLento_" + i;
-            // Ajustado a la altura de los powerups (Y = -24) subido 1 unidad mas
             enemigo.transform.position = new Vector3(Random.Range(-40, 40), -24, Random.Range(40, 80));
             enemigo.transform.localScale = Vector3.one * 1.5f; // Un poco más grandes
 
-            // --- NUEVO: CONFIGURACIÓN DE DAÑO ---
             if (enemigo.GetComponent<AtaqueEnemigo>() == null) {
                 enemigo.AddComponent<AtaqueEnemigo>();
             }
@@ -298,9 +283,7 @@ public class LimpiadorDeEscena : MonoBehaviour
             col.isTrigger = true;
             col.center = new Vector3(0, 1, 0);
             col.height = 2;
-            // ------------------------------------
             
-            // Asegurar componentes de IA
             NavMeshAgent agent = enemigo.GetComponent<NavMeshAgent>();
             if (agent == null) agent = enemigo.AddComponent<NavMeshAgent>();
             
@@ -392,16 +375,14 @@ public class LimpiadorDeEscena : MonoBehaviour
             Rigidbody rb = container.AddComponent<Rigidbody>();
             rb.mass = 2f;
 
-            // --- NUEVO: BRILLO PARA LOS PANES ---
             GameObject luzPan = new GameObject("Luz_Pan");
             luzPan.transform.SetParent(container.transform);
             luzPan.transform.localPosition = new Vector3(0, 0.5f, 0);
             Light luz = luzPan.AddComponent<Light>();
             luz.type = LightType.Point;
-            luz.color = new Color(1.0f, 0.6f, 0.2f); // Naranja cálido
+            luz.color = new Color(1.0f, 0.6f, 0.2f);
             luz.intensity = 5f;
             luz.range = 8f;
-            // ------------------------------------
 
             MeshRenderer mr = container.GetComponentInChildren<MeshRenderer>();
             if (mr != null)
@@ -417,8 +398,8 @@ public class LimpiadorDeEscena : MonoBehaviour
     void GenerarControlesTutorial()
     {
         GameObject info = new GameObject("Controles_Tutorial");
-        info.name = "INFO_CONTROLES_FIJO"; // Nombre único para protegerlo
-        info.transform.position = new Vector3(-10, 3, 5); // Movido más adelante (Z=5)
+        info.name = "INFO_CONTROLES_FIJO";
+        info.transform.position = new Vector3(-10, 3, 5);
         TextMesh tm = info.AddComponent<TextMesh>();
         tm.text = "CONTROLES:\nWASD - MOVERSE\nESPACIO - SALTAR\nE - AGARRAR/SOLTAR PAN\nESC - PAUSA";
         tm.fontSize = 120;
@@ -482,9 +463,8 @@ public class LimpiadorDeEscena : MonoBehaviour
             }
         }
 
-        // --- NUEVO: HISTORIA DE LA OFRENDA ANTES DEL BOTÓN ---
         GameObject historia = new GameObject("HISTORIA_OFRENDA_TEXTO");
-        historia.transform.position = new Vector3(0, 4, 75); // Antes del botón que está en Z=85
+        historia.transform.position = new Vector3(0, 4, 75);
         TextMesh tmH = historia.AddComponent<TextMesh>();
         tmH.text = "EL PAN DE MUERTO ES EL ALIMENTO DEL ALMA.\n" +
                    "En el siguiente nivel, deberás recoger el pan\n" +

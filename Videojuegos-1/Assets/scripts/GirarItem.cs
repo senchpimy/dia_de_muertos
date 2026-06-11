@@ -2,11 +2,10 @@ using UnityEngine;
 
 public class GirarItem : MonoBehaviour
 {
-    public float velocidadGiro = 100f; // Qué tan rápido da vueltas
+    public float velocidadGiro = 100f;
 
     void Update()
     {
-        // Gira este objeto sobre el eje Y (vertical) cada segundo
         transform.Rotate(Vector3.up * velocidadGiro * Time.deltaTime);
     }
 }

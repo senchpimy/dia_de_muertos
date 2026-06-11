@@ -20,16 +20,13 @@ public class DispararArma : MonoBehaviour
 
     void Start()
     {
-        // Aseguramos detectar la cámara marcada como 'MainCamera'
         camaraPrincipal = Camera.main;
     }
 
     void Update()
     {
-        // 1. Si está recargando, bloqueamos cualquier disparo
         if (estaRecargando) return;
 
-        // 2. Disparar con Clic Izquierdo (Mouse 0)
         if (Input.GetMouseButtonDown(0) && municionActual > 0)
         {
             Disparar();
@@ -39,7 +36,6 @@ public class DispararArma : MonoBehaviour
             Debug.Log("¡Sin munición! Presiona R para recargar.");
         }
 
-        // 3. Recargar con la tecla R
         if (Input.GetKeyDown(KeyCode.R) && municionActual < municionMaxima && !estaRecargando)
         {
             StartCoroutine(Recargar());
@@ -50,7 +46,6 @@ public class DispararArma : MonoBehaviour
     {
         municionActual--;
 
-        // Creamos el rayo desde el centro de la pantalla
         Ray rayo = camaraPrincipal.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit golpe;
         Vector3 puntoDestino;
@@ -61,12 +56,11 @@ public class DispararArma : MonoBehaviour
         }
         else
         {
-            puntoDestino = rayo.GetPoint(1000); // Disparo lejano si no hay obstáculos
+            puntoDestino = rayo.GetPoint(1000);
         }
 
         Vector3 direccionDisparo = (puntoDestino - puntoDisparo.position).normalized;
 
-        // Instanciamos y disparamos la bala
         GameObject nuevaBala = Instantiate(balaPrefab, puntoDisparo.position, Quaternion.LookRotation(direccionDisparo));
 
         Rigidbody rb = nuevaBala.GetComponent<Rigidbody>();

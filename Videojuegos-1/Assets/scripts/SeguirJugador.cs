@@ -13,7 +13,6 @@ public class SeguirJugador : MonoBehaviour
         agente = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         
-        // Si no hay NavMesh, desactivamos el agente para evitar errores y usamos lógica manual
         if (agente != null && !agente.isOnNavMesh)
         {
             agente.enabled = false;
@@ -24,7 +23,6 @@ public class SeguirJugador : MonoBehaviour
     {
         if (objetivo == null) return;
 
-        // Intentar usar NavMesh si está disponible y activo
         if (agente != null && agente.enabled && agente.isOnNavMesh)
         {
             agente.SetDestination(objetivo.position);
@@ -32,14 +30,12 @@ public class SeguirJugador : MonoBehaviour
         }
         else
         {
-            // Lógica de movimiento manual (Fallback si no hay NavMesh en la calavera)
             MoverManualmente();
         }
     }
 
     void MoverManualmente()
     {
-        // Rotar hacia el jugador
         Vector3 direccion = (objetivo.position - transform.position).normalized;
         direccion.y = 0; // Mantenerse derecho
         
@@ -49,10 +45,8 @@ public class SeguirJugador : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, rotacionObjetivo, Time.deltaTime * 5f);
         }
 
-        // Caminar hacia adelante
         transform.Translate(Vector3.forward * velocidadManual * Time.deltaTime);
 
-        // Actualizar animación si existe
         if (anim != null) anim.SetFloat("Speed", velocidadManual);
     }
 }
